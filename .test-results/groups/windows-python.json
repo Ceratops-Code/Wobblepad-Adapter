@@ -57,8 +57,8 @@
   "group": "windows-python",
   "schema": "ceratops-repository-stage-result.v1",
   "source": {
-    "contentSha256": "b8dd1797404d1aeaf9292df830594a228204f9f9c50394d9893d82fafc1f64e6",
-    "sourceCommit": "4045c042a1ce631f4b881fff81ce5ce34d6093e3"
+    "contentSha256": "f11cc003cbc85f871e9ff6c6beaa191a92eb2160a24e4d1e5f23b64a82a1603a",
+    "sourceCommit": "03f113f397c468e54238dcf8a67183923458420b"
   },
   "stage": "tests",
   "status": "passed",
