@@ -49,6 +49,9 @@ jobs:
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
+      - name: Install Markdown dependencies
+        run: npm --prefix scripts ci
+
       - name: Validate and test through SDLC
         uses: Ceratops-Code/AI-Agent-Skills/skills/ceratops-repo-lifecycle/scripts@8b66565ee42edb5d2840bf895e2a79b739d347d0
         with:

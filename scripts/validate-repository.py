@@ -58,10 +58,6 @@ CHECK_DEFINITIONS = [{'id': 'ruff',
  {'id': 'npm-markdown-lint',
   'command': ['{npm}', '--prefix', 'scripts', 'run', 'lint:markdown'],
   'cwd': '.',
-  'exclusive': False},
- {'id': 'android-lint',
-  'command': ['{gradle}', '--no-daemon', ':app:lintDebug'],
-  'cwd': '.',
   'exclusive': False}]
 COMMAND_NOT_FOUND_EXIT_CODE = 127
 
@@ -247,7 +243,6 @@ def command(definition: dict[str, object], temporary_root: pathlib.Path) -> list
         "{pnpm}": pnpm,
         "{pwsh}": pwsh,
         "{temp}": str(temporary_root),
-        "{gradle}": str(ROOT / ("gradlew.bat" if os.name == "nt" else "gradlew")),
     }
     raw_command = definition["command"]
     if not isinstance(raw_command, list):

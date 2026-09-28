@@ -67,11 +67,16 @@ class BuildAndroidTests(unittest.TestCase):
                             str(java_home),
                         )
 
-    def test_build_command_has_one_owned_gradle_task(self) -> None:
+    def test_build_command_lints_before_assembling(self) -> None:
         wrapper = pathlib.Path("gradlew.bat")
         self.assertEqual(
             BUILD.build_command(wrapper),
-            [str(wrapper), "--no-daemon", ":app:assembleDebug"],
+            [
+                str(wrapper),
+                "--no-daemon",
+                ":app:lintDebug",
+                ":app:assembleDebug",
+            ],
         )
 
     def test_build_result_has_structured_identity_without_receipt_path(self) -> None:
