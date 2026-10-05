@@ -62,6 +62,10 @@ CHECK_DEFINITIONS = [{'id': 'ruff',
  {'id': 'android-lint',
   'command': ['{gradle}', '--no-daemon', ':app:lintDebug'],
   'cwd': '.',
+  'exclusive': False},
+ {'id': 'android-build',
+  'command': ['{python}', 'scripts/build-android.py'],
+  'cwd': '.',
   'exclusive': False}]
 COMMAND_NOT_FOUND_EXIT_CODE = 127
 

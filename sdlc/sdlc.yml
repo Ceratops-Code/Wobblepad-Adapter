@@ -7,6 +7,11 @@ repository:
     java:
       executable: java
       version: "17"
+    jdk:
+      executable: java
+      version: "17"
+    android-sdk:
+      executable: sdkmanager
     node:
       executable: node
       version: "24"
@@ -20,6 +25,8 @@ repository:
         capabilities:
           - uv
           - java
+          - jdk
+          - android-sdk
           - node
           - npm
       result-schema: ceratops-repository-stage-result.v1
@@ -113,8 +120,22 @@ deliverables:
       actions:
         validate:
           requires:
-            capabilities: []
-          no-op: Repository validation and tests cover the Android app source.
+            capabilities:
+              - uv
+              - jdk
+              - android-sdk
+          validation-capabilities:
+            - android-build
+            - android-lint
+          steps:
+            - run:
+                - uv
+                - run
+                - --project
+                - scripts
+                - --locked
+                - python
+                - scripts/validate-repository.py
         install:
           requires:
             capabilities:
