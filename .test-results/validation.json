@@ -29,13 +29,18 @@
       "exitCode": 0,
       "id": "android-lint",
       "status": "passed"
+    },
+    {
+      "exitCode": 0,
+      "id": "android-build",
+      "status": "passed"
     }
   ],
   "evidence": null,
   "schema": "ceratops-repository-stage-result.v1",
   "source": {
-    "contentSha256": "b8dd1797404d1aeaf9292df830594a228204f9f9c50394d9893d82fafc1f64e6",
-    "sourceCommit": "4045c042a1ce631f4b881fff81ce5ce34d6093e3"
+    "contentSha256": "c54a80d8c68cfb34c4a161446931fb239e7bd600244865cb4a32e42d195c03f9",
+    "sourceCommit": "a19bcc88101dec75586477870f36964d4fab78af"
   },
   "stage": "validation",
   "status": "passed"
