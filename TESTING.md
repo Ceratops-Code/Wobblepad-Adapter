@@ -23,7 +23,7 @@ exact source content it exercised.
 | Keep sensor data local unless the user explicitly exports CSV | Inspect the merged manifest and exercise Android's document picker | Repository validation plus manual Android observation |
 
 Historical prototype captures live under the ignored `Prototype/` directory.
-They do not qualify a newer commit and must not be copied into tracked results.
+They do not qualify a newer commit and must not be copied into current results.
 
 ## Commands and retained results
 
@@ -38,6 +38,8 @@ uv run --project scripts --locked python scripts/run-tests.py
 Validation replaces `.test-results/validation.json`. Tests replace the aggregate
 `.test-results/tests.json` and the repository-script, Android JVM, and Windows
 Python group records under `.test-results/groups/`.
+These records stay local and are ignored by Git, so running the checks leaves
+source clean.
 The SDLC contract declares the canonical Ceratops result schema for validation,
 tests, Android and Windows builds, and platform deployment; the lifecycle runner
 validates each successful command's complete JSON output before accepting it.

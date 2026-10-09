@@ -25,8 +25,8 @@ __pycache__/
 !/test-fixtures/joystick-mapper-v1.csv
 *.log
 
-# Portable validation and test results are tracked; supporting logs stay local.
-/.test-results/evidence/
+# Generated check and test records stay local.
+/.test-results/
 
 # OS files
 .DS_Store

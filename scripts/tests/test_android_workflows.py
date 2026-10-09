@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 import types
@@ -179,6 +180,32 @@ class ResultRecordTests(unittest.TestCase):
         self.assertEqual(value["stage"], "validation")
         self.assertIsNone(value["evidence"])
         self.assertNotIn("artifact", value)
+
+    def test_generated_check_records_are_ignored_by_git(self) -> None:
+        paths = [
+            ".test-results/validation.json",
+            ".test-results/tests.json",
+            ".test-results/groups/repository-scripts.json",
+        ]
+        ignored = subprocess.run(
+            ["git", "check-ignore", "--no-index", "--verbose", "--", *paths],
+            cwd=SCRIPTS.parent,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(ignored.returncode, 0, ignored.stderr)
+        self.assertEqual(len(ignored.stdout.splitlines()), len(paths))
+        for line in ignored.stdout.splitlines():
+            self.assertTrue(line.startswith(".gitignore:"), line)
+        tracked = subprocess.run(
+            ["git", "ls-files", "--", ".test-results"],
+            cwd=SCRIPTS.parent,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(tracked.stdout.strip(), "")
 
     def test_atomic_result_writer_replaces_previous_status(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
