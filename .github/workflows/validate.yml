@@ -36,12 +36,12 @@ jobs:
           python-version: "3.14"
 
       - name: Set up Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
@@ -49,11 +49,8 @@ jobs:
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Install Markdown dependencies
-        run: npm --prefix scripts ci
-
       - name: Validate and test through SDLC
-        uses: Ceratops-Code/AI-Agent-Skills/skills/ceratops-repo-lifecycle/scripts@8b66565ee42edb5d2840bf895e2a79b739d347d0
+        uses: Ceratops-Code/Ceratops-AI-Agents-Kit/skills/ceratops-repo-lifecycle/scripts@df08d5b810164ea03282ea9ddf83f2b66bde7fa8
         with:
           repo-root: .
           evidence-file: ${{ runner.temp }}/sdlc-validation.json

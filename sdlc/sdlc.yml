@@ -6,15 +6,15 @@ repository:
       executable: uv
     java:
       executable: java
-      version: '17'
+      version: "17"
     jdk:
       executable: java
-      version: '17'
+      version: "17"
     android-sdk:
       executable: sdkmanager
     node:
       executable: node
-      version: '24'
+      version: "24"
     npm:
       executable: npm
     adb:
@@ -24,11 +24,30 @@ repository:
       requires:
         capabilities:
           - uv
+          - java
+          - jdk
+          - android-sdk
+          - node
+          - npm
+      result-schema: ceratops-repository-stage-result.v1
       steps:
         - run:
             - uv
             - run
+            - --project
+            - scripts
             - --locked
+            - python
+            - -c
+            - import shutil, subprocess; subprocess.run([shutil.which('npm'), '--prefix',
+              'scripts', 'ci'], check=True)
+        - run:
+            - uv
+            - run
+            - --project
+            - scripts
+            - --locked
+            - python
             - scripts/validate-repository.py
     test:
       requires:
@@ -45,17 +64,6 @@ repository:
             - --locked
             - python
             - scripts/run-tests.py
-    bootstrap:
-      requires:
-        capabilities:
-          - uv
-      steps:
-        - run:
-            - uv
-            - sync
-            - --project
-            - scripts
-            - --locked
 deliverables:
   packages:
     wobblepad-apk:
@@ -117,8 +125,8 @@ deliverables:
               - jdk
               - android-sdk
           validation-capabilities:
-            - android-lint
             - android-build
+            - android-lint
           steps:
             - run:
                 - uv
@@ -127,7 +135,7 @@ deliverables:
                 - scripts
                 - --locked
                 - python
-                - scripts/build-android.py
+                - scripts/validate-repository.py
         install:
           requires:
             capabilities:
@@ -146,7 +154,7 @@ deliverables:
                 - python
                 - scripts/deploy-android.py
                 - --serial
-                - '{serial}'
+                - "{serial}"
     wobblepad-windows:
       source: windows-app
       manifest: windows-app/pyproject.toml

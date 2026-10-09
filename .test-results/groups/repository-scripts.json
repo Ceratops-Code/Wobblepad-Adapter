@@ -5,7 +5,7 @@
       "status": "passed"
     },
     {
-      "id": "test_android_workflows.BuildAndroidTests.test_build_command_lints_before_assembling",
+      "id": "test_android_workflows.BuildAndroidTests.test_build_command_has_one_owned_gradle_task",
       "status": "passed"
     },
     {
@@ -97,8 +97,8 @@
   "group": "repository-scripts",
   "schema": "ceratops-repository-stage-result.v1",
   "source": {
-    "contentSha256": "f11cc003cbc85f871e9ff6c6beaa191a92eb2160a24e4d1e5f23b64a82a1603a",
-    "sourceCommit": "03f113f397c468e54238dcf8a67183923458420b"
+    "contentSha256": "c54a80d8c68cfb34c4a161446931fb239e7bd600244865cb4a32e42d195c03f9",
+    "sourceCommit": "a19bcc88101dec75586477870f36964d4fab78af"
   },
   "stage": "tests",
   "status": "passed",
