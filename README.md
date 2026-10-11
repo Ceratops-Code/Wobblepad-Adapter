@@ -134,7 +134,7 @@ does not cross-compile Windows executables.
 Android Studio can also open the repository root directly. Debug builds use the
 standard per-machine Android debug key; no signing key is stored here.
 
-Validation and test helpers write portable results to `.test-results/`, bound
+Check and test helpers keep local records under ignored `.test-results/`, bound
 to a source-content digest and the latest commit that changed those source
 inputs. Supporting logs stay under the
 ignored `.test-results/evidence/` directory. Build and deployment emit bounded
