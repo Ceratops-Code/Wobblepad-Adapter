@@ -7,12 +7,15 @@ import importlib.util
 import io
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 import types
 import unittest
 from typing import Any, cast
 from unittest import mock
+
+import yaml
 
 SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
 
@@ -67,11 +70,16 @@ class BuildAndroidTests(unittest.TestCase):
                             str(java_home),
                         )
 
-    def test_build_command_has_one_owned_gradle_task(self) -> None:
+    def test_build_command_lints_before_assembling(self) -> None:
         wrapper = pathlib.Path("gradlew.bat")
         self.assertEqual(
             BUILD.build_command(wrapper),
-            [str(wrapper), "--no-daemon", ":app:assembleDebug"],
+            [
+                str(wrapper),
+                "--no-daemon",
+                ":app:lintDebug",
+                ":app:assembleDebug",
+            ],
         )
 
     def test_build_result_has_structured_identity_without_receipt_path(self) -> None:
@@ -163,6 +171,45 @@ other unauthorized
 
 
 class ResultRecordTests(unittest.TestCase):
+    def test_android_contract_accepts_the_combined_build_record(self) -> None:
+        contract = yaml.safe_load(
+            (SCRIPTS.parent / "sdlc" / "sdlc.yml").read_text(encoding="utf-8")
+        )
+        required = contract["deliverables"]["apps"]["wobblepad-android"][
+            "actions"
+        ]["validate"]["validation-capabilities"]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            record = root / "result.json"
+            completed = subprocess.CompletedProcess([], 0, "", "")
+            with (
+                mock.patch.object(VALIDATE, "RESULT_FILE", record),
+                mock.patch.object(VALIDATE, "DEFAULT_EVIDENCE_FILE", root / "failure.log"),
+                mock.patch.object(
+                    VALIDATE,
+                    "source_identity",
+                    return_value={"contentSha256": "source", "sourceCommit": "commit"},
+                ),
+                mock.patch.object(VALIDATE.subprocess, "run", return_value=completed) as run,
+                mock.patch.object(sys, "argv", ["validate-repository.py"]),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                for _ in range(2):
+                    run.reset_mock()
+                    self.assertEqual(VALIDATE.main(), 0)
+                    result = json.loads(record.read_text(encoding="utf-8"))
+                    passed = {
+                        check["id"] for check in result["checks"]
+                        if check["status"] == "passed"
+                    }
+                    self.assertEqual(result["status"], "passed")
+                    self.assertTrue(set(required).issubset(passed))
+                    android_calls = [
+                        call.args[0] for call in run.call_args_list
+                        if "scripts/build-android.py" in call.args[0]
+                    ]
+                    self.assertEqual(len(android_calls), 1)
+
     def test_validation_record_is_portable_and_separate_from_build(self) -> None:
         value = VALIDATE.validation_record(
             "passed",
@@ -174,6 +221,32 @@ class ResultRecordTests(unittest.TestCase):
         self.assertEqual(value["stage"], "validation")
         self.assertIsNone(value["evidence"])
         self.assertNotIn("artifact", value)
+
+    def test_generated_check_records_are_ignored_by_git(self) -> None:
+        paths = [
+            ".test-results/validation.json",
+            ".test-results/tests.json",
+            ".test-results/groups/repository-scripts.json",
+        ]
+        ignored = subprocess.run(
+            ["git", "check-ignore", "--no-index", "--verbose", "--", *paths],
+            cwd=SCRIPTS.parent,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(ignored.returncode, 0, ignored.stderr)
+        self.assertEqual(len(ignored.stdout.splitlines()), len(paths))
+        for line in ignored.stdout.splitlines():
+            self.assertTrue(line.startswith(".gitignore:"), line)
+        tracked = subprocess.run(
+            ["git", "ls-files", "--", ".test-results"],
+            cwd=SCRIPTS.parent,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(tracked.stdout.strip(), "")
 
     def test_atomic_result_writer_replaces_previous_status(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

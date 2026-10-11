@@ -29,9 +29,14 @@ def gradle_wrapper(root: pathlib.Path = ROOT) -> pathlib.Path:
 
 
 def build_command(wrapper: pathlib.Path) -> list[str]:
-    """Return the sole supported debug-build command."""
+    """Return the linted debug-build command used by validation and builds."""
 
-    return [str(wrapper), "--no-daemon", ":app:assembleDebug"]
+    return [
+        str(wrapper),
+        "--no-daemon",
+        ":app:lintDebug",
+        ":app:assembleDebug",
+    ]
 
 
 def gradle_environment(windows: bool | None = None) -> dict[str, str]:
