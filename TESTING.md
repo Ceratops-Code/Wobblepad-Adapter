@@ -6,6 +6,10 @@ checks and Android lint, while `scripts/run-tests.py` runs repository-script,
 Kotlin/JVM, and Windows Python test groups. Each retained result identifies the
 exact source content it exercised.
 
+The Android command runs lint before assembly once. Its result reports both
+`android-lint` and `android-build`; both stay pending until it finishes, and a
+failed combined command proves neither capability passed.
+
 ## Feature-to-observation map
 
 | Supported behavior | Test or observation | Current coverage |

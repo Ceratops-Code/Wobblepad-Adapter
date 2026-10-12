@@ -60,6 +60,7 @@ CHECK_DEFINITIONS = [{'id': 'ruff',
   'cwd': '.',
   'exclusive': False},
  {'id': 'android-build',
+  'result_ids': ['android-lint', 'android-build'],
   'command': ['{python}', 'scripts/build-android.py'],
   'cwd': '.',
   'exclusive': False}]
@@ -217,6 +218,25 @@ def portable_evidence_path(path: pathlib.Path | None) -> str | None:
         return None
 
 
+def reported_check_results(
+    definition: dict[str, object], status: str, exit_code: int | None = None
+) -> list[dict[str, Any]]:
+    """Report both Android checks from one combined command's completion.
+
+    A failed combined command cannot prove either capability passed, so both
+    receive its failure status. Pending records follow the same identities.
+    """
+
+    identifiers = definition.get("result_ids", [definition["id"]])
+    if not isinstance(identifiers, list):
+        raise TypeError("result_ids must be a list")
+    return [
+        {"id": str(identifier), "status": status,
+         **({"exitCode": exit_code} if exit_code is not None else {})}
+        for identifier in identifiers
+    ]
+
+
 def validation_record(
     status: str,
     source: dict[str, Any],
@@ -342,8 +362,9 @@ def main() -> int:
     )
     pending_source: dict[str, Any] = {"contentSha256": None, "sourceCommit": None}
     pending_checks = [
-        {"id": str(definition["id"]), "status": "pending"}
+        check
         for definition in CHECK_DEFINITIONS
+        for check in reported_check_results(definition, "pending")
     ]
     write_json(
         RESULT_FILE,
@@ -395,8 +416,8 @@ def main() -> int:
                     f"{type(exc).__name__}: {exc}",
                 )
             if result.returncode == 0:
-                completed_checks.append(
-                    {"id": str(definition["id"]), "status": "passed", "exitCode": 0}
+                completed_checks.extend(
+                    reported_check_results(definition, "passed", 0)
                 )
                 continue
             evidence_file.parent.mkdir(parents=True, exist_ok=True)
@@ -426,12 +447,8 @@ def main() -> int:
                 if result.returncode == COMMAND_NOT_FOUND_EXIT_CODE
                 else "failed"
             )
-            completed_checks.append(
-                {
-                    "id": str(definition["id"]),
-                    "status": failed_status,
-                    "exitCode": result.returncode,
-                }
+            completed_checks.extend(
+                reported_check_results(definition, failed_status, result.returncode)
             )
             write_json(
                 RESULT_FILE,
