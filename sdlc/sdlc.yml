@@ -126,6 +126,7 @@ deliverables:
               - android-sdk
           validation-capabilities:
             # The build command runs lintDebug before assembleDebug.
+            - android-lint
             - android-build
           steps:
             - run:

@@ -10,9 +10,10 @@ import queue
 import threading
 import time
 import tkinter as tk
+from collections.abc import Coroutine
 from functools import partial
 from tkinter import messagebox, ttk
-from typing import Any, Coroutine
+from typing import Any
 
 from wobblepad_windows.ble_client import BleBridge, Board
 from wobblepad_windows.keyboard import ArrowKeyEmitter

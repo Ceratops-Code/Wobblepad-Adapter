@@ -178,6 +178,7 @@ class ResultRecordTests(unittest.TestCase):
         required = contract["deliverables"]["apps"]["wobblepad-android"][
             "actions"
         ]["validate"]["validation-capabilities"]
+        self.assertEqual(set(required), {"android-lint", "android-build"})
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)
             record = root / "result.json"
@@ -209,6 +210,97 @@ class ResultRecordTests(unittest.TestCase):
                         if "scripts/build-android.py" in call.args[0]
                     ]
                     self.assertEqual(len(android_calls), 1)
+
+    def test_combined_android_failure_never_reports_a_pass(self) -> None:
+        definition = VALIDATE.CHECK_DEFINITIONS[-1]
+        for exit_code, status in ((1, "failed"), (127, "blocked")):
+            with self.subTest(exit_code=exit_code), tempfile.TemporaryDirectory() as raw:
+                root = pathlib.Path(raw)
+                record = root / "result.json"
+                with (
+                    mock.patch.object(VALIDATE, "CHECK_DEFINITIONS", [definition]),
+                    mock.patch.object(VALIDATE, "RESULT_FILE", record),
+                    mock.patch.object(VALIDATE, "DEFAULT_EVIDENCE_FILE", root / "failure.log"),
+                    mock.patch.object(VALIDATE, "source_identity", return_value={}),
+                    mock.patch.object(VALIDATE.subprocess, "run", return_value=
+                                      subprocess.CompletedProcess([], exit_code, "", "failure")),
+                    mock.patch.object(sys, "argv", ["validate-repository.py"]),
+                    contextlib.redirect_stdout(io.StringIO()),
+                ):
+                    for _ in range(2):
+                        self.assertEqual(VALIDATE.main(), exit_code)
+                        payload = json.loads(record.read_text(encoding="utf-8"))
+                        self.assertEqual(payload["status"], status)
+                        self.assertEqual(payload["checks"], [
+                            {"id": name, "status": status, "exitCode": exit_code}
+                            for name in ("android-lint", "android-build")
+                        ])
+
+    def test_combined_android_interruption_and_fresh_retry(self) -> None:
+        boundaries = [("record", number, after)
+                      for number in (1, 2, 3) for after in (False, True)]
+        boundaries += [("command", 1, after) for after in (False, True)]
+        definition = VALIDATE.CHECK_DEFINITIONS[-1]
+        real_write = VALIDATE.write_json
+        for boundary, number, after in boundaries:
+            with self.subTest(boundary=boundary, number=number, after=after):
+                with tempfile.TemporaryDirectory() as raw:
+                    root = pathlib.Path(raw)
+                    record = root / "result.json"
+                    counts = {"record": 0, "command": 0}
+                    armed = True
+
+                    def interrupt(
+                        kind: str, completed: bool,
+                        counters: dict[str, int] = counts,
+                        selected: tuple[str, int, bool] = (boundary, number, after),
+                    ) -> None:
+                        nonlocal armed
+                        if armed and (kind, counters[kind], completed) == selected:
+                            armed = False
+                            raise KeyboardInterrupt
+
+                    def write(
+                        path: pathlib.Path, payload: dict[str, Any],
+                        counters: dict[str, int] = counts,
+                    ) -> None:
+                        counters["record"] += 1
+                        interrupt("record", False)
+                        real_write(path, payload)
+                        interrupt("record", True)
+
+                    def run(
+                        *args: Any, counters: dict[str, int] = counts, **kwargs: Any
+                    ) -> subprocess.CompletedProcess[str]:
+                        counters["command"] += 1
+                        interrupt("command", False)
+                        result = subprocess.CompletedProcess([], 0, "", "")
+                        interrupt("command", True)
+                        return result
+
+                    with (
+                        mock.patch.object(VALIDATE, "CHECK_DEFINITIONS", [definition]),
+                        mock.patch.object(VALIDATE, "RESULT_FILE", record),
+                        mock.patch.object(VALIDATE, "DEFAULT_EVIDENCE_FILE", root / "failure.log"),
+                        mock.patch.object(VALIDATE, "source_identity", return_value={}),
+                        mock.patch.object(VALIDATE, "write_json", side_effect=write),
+                        mock.patch.object(VALIDATE.subprocess, "run", side_effect=run),
+                        mock.patch.object(sys, "argv", ["validate-repository.py"]),
+                        contextlib.redirect_stdout(io.StringIO()),
+                    ):
+                        with self.assertRaises(KeyboardInterrupt):
+                            VALIDATE.main()
+                        if record.exists():
+                            payload = json.loads(record.read_text(encoding="utf-8"))
+                            expected = "passed" if (boundary, number, after) == ("record", 3, True) else "running"
+                            self.assertEqual(payload["status"], expected)
+                        for _ in range(2):
+                            self.assertEqual(VALIDATE.main(), 0)
+                            payload = json.loads(record.read_text(encoding="utf-8"))
+                            self.assertEqual(payload["checks"], [
+                                {"id": name, "status": "passed", "exitCode": 0}
+                                for name in ("android-lint", "android-build")
+                            ])
 
     def test_validation_record_is_portable_and_separate_from_build(self) -> None:
         value = VALIDATE.validation_record(
