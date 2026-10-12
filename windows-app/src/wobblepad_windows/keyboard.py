@@ -5,8 +5,8 @@ from __future__ import annotations
 import ctypes
 import os
 import time
+from collections.abc import Callable
 from ctypes import wintypes
-from typing import Callable
 
 KEYEVENTF_KEYUP = 0x0002
 INPUT_KEYBOARD = 1

@@ -241,19 +241,19 @@ class RecordingResult(unittest.TextTestResult):
 
     cases: list[dict[str, Any]]
 
-    def startTestRun(self) -> None:  # noqa: N802 - unittest API
+    def startTestRun(self) -> None:
         self.cases = []
         super().startTestRun()
 
-    def addSuccess(self, test: unittest.case.TestCase) -> None:  # noqa: N802
+    def addSuccess(self, test: unittest.case.TestCase) -> None:
         self.cases.append({"id": test.id(), "status": "passed"})
         super().addSuccess(test)
 
-    def addSkip(self, test: unittest.case.TestCase, reason: str) -> None:  # noqa: N802
+    def addSkip(self, test: unittest.case.TestCase, reason: str) -> None:
         self.cases.append({"id": test.id(), "status": "skipped", "reason": reason})
         super().addSkip(test, reason)
 
-    def addFailure(self, test: unittest.case.TestCase, err: Any) -> None:  # noqa: N802
+    def addFailure(self, test: unittest.case.TestCase, err: Any) -> None:
         self.cases.append(
             {
                 "id": test.id(),
@@ -263,7 +263,7 @@ class RecordingResult(unittest.TextTestResult):
         )
         super().addFailure(test, err)
 
-    def addError(self, test: unittest.case.TestCase, err: Any) -> None:  # noqa: N802
+    def addError(self, test: unittest.case.TestCase, err: Any) -> None:
         self.cases.append(
             {
                 "id": test.id(),

@@ -12,9 +12,10 @@ import math
 import os
 import pathlib
 import time
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from enum import Enum
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 SERVICE_UUID = "856b152a-734a-5546-bf2b-ed4898184e12"
 CHARACTERISTIC_UUID = "856b152b-734a-5546-bf2b-ed4898184e12"
@@ -25,7 +26,7 @@ MAX_KEY_REPEAT_MS = 1000
 Vector = tuple[float, ...]
 
 
-class Pose(str, Enum):
+class Pose(str, Enum):  # noqa: UP042 - preserve the public Pose string representation
     """The five user-held calibration positions."""
 
     CENTER = "CENTER"
