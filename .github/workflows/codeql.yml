@@ -23,6 +23,9 @@ jobs:
     name: analyze-java-kotlin
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      # Kotlin requires the manual build; overlays support build-mode none only.
+      CODEQL_OVERLAY_DATABASE_MODE: none
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,6 +44,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          cache-suffix: ${{ github.workflow }}-${{ github.job }}
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4

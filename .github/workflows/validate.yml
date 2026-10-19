@@ -42,6 +42,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          cache-suffix: ${{ github.workflow }}-${{ github.job }}
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
@@ -50,7 +52,7 @@ jobs:
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
       - name: Validate and test through SDLC
-        uses: Ceratops-Code/Ceratops-AI-Agents-Kit/skills/ceratops-repo-lifecycle/scripts@ffb3855080cbb00f104d303915d761320cf7b7e8 # revision ffb3855080cb
+        uses: Ceratops-Code/Ceratops-AI-Agents-Kit/skills/ceratops-repo-lifecycle/scripts@e9a79aacee4c8d7deb6ab9c3b811260bb67be672 # revision e9a79aacee4c
         with:
           repo-root: .
           evidence-file: ${{ runner.temp }}/sdlc-validation.json
