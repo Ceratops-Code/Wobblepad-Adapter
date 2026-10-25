@@ -52,7 +52,7 @@ jobs:
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
       - name: Validate and test through SDLC
-        uses: Ceratops-Code/Ceratops-AI-Agents-Kit/skills/ceratops-repo-lifecycle/scripts@e9a79aacee4c8d7deb6ab9c3b811260bb67be672 # revision e9a79aacee4c
+        uses: Ceratops-Code/Ceratops-AI-Agents-Kit/skills/ceratops-repo-lifecycle/scripts@d23b0bc439fb77e8291a85588a85a75163289f42 # revision d23b0bc439fb
         with:
           repo-root: .
           evidence-file: ${{ runner.temp }}/sdlc-validation.json
